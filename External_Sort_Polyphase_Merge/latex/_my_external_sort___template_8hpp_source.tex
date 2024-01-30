@@ -1,0 +1,735 @@
+\doxysection{My\+External\+Sort\+\_\+\+Template.\+hpp}
+\hypertarget{_my_external_sort___template_8hpp_source}{}\label{_my_external_sort___template_8hpp_source}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ \_MY\_EXTERNAL\_SORT\_}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ \_MY\_EXTERNAL\_SORT\_}}
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <iostream>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <cstdlib>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <ctime>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <queue>}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <assert.h>}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ <fstream>}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <limits.h>}}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ \textcolor{keyword}{using\ namespace\ }std;}
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00015\ \textcolor{comment}{//\ total\ number\ of\ tapes\ you\ have,}}
+\DoxyCodeLine{00016\ \textcolor{comment}{//\ note\ that\ you\ should\ leave\ one\ tape\ for\ output\ during\ merging}}
+\DoxyCodeLine{00017\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ TOTAL\_TAPES\ =\ 16;}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ \textcolor{comment}{//\ the\ number\ of\ elements\ that\ can\ be\ loaded\ in\ to\ the\ main\ memory\ each\ time}}
+\DoxyCodeLine{00020\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ BATCH\_SIZE\ =\ 32;}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{comment}{//\ a\ list\ of\ kth\ order\ Fibonacci\ numbers}}
+\DoxyCodeLine{00023\ \textcolor{keyword}{static}\ std::vector<size\_t>\ fibo\_series;}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{comment}{//\ custom\ comparators\ for\ priority\ queues}}
+\DoxyCodeLine{00026\ \textcolor{keyword}{auto}\ GREATER\ =\ [](\textcolor{keyword}{const}\ std::pair<size\_t,\ size\_t>\ \&a,\ \textcolor{keyword}{const}\ std::pair<size\_t,\ size\_t>\ \&b)}
+\DoxyCodeLine{00027\ \{}
+\DoxyCodeLine{00028\ \ \ \textcolor{keywordflow}{return}\ a.first\ >\ b.first;}
+\DoxyCodeLine{00029\ \};}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \textcolor{keyword}{auto}\ LESSER\ =\ [](\textcolor{keyword}{const}\ std::pair<size\_t,\ size\_t>\ \&a,\ \textcolor{keyword}{const}\ std::pair<size\_t,\ size\_t>\ \&b)}
+\DoxyCodeLine{00032\ \{}
+\DoxyCodeLine{00033\ \ \ \textcolor{keywordflow}{return}\ a.first\ <\ b.first;}
+\DoxyCodeLine{00034\ \};}
+\DoxyCodeLine{00035\ }
+\DoxyCodeLine{00036\ \textcolor{keywordtype}{char}\ a;}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ \textcolor{comment}{/*-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ \ Function:\ IsSorted}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ \ \ \ Checks\ if\ the\ content\ in\ input\_file\ is\ sorted}}
+\DoxyCodeLine{00041\ \textcolor{comment}{}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ \ Vairables:}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ \ \ \ input\_file\ -\/\ the\ file\ name\ that\ you\ want\ to\ check\ if\ it's\ sorted}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ \ reverse\ \ \ \ -\/\ \ if\ set\ true,\ sort\ in\ descending\ order;\ otherwise\ in\ ascending\ order}}
+\DoxyCodeLine{00045\ \textcolor{comment}{}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ \ Note:\ you\ can\ use\ this\ to\ check\ if\ your\ result\ is\ correctly\ sorted.}}
+\DoxyCodeLine{00047\ \textcolor{comment}{-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/*/}}
+\DoxyCodeLine{00048\ \textcolor{keywordtype}{bool}\ IsSorted(\textcolor{keyword}{const}\ std::string\ \&input\_file,\ \textcolor{keywordtype}{bool}\ reverse\ =\ \textcolor{keyword}{false})}
+\DoxyCodeLine{00049\ \{}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \ \ \textcolor{keywordtype}{bool}\ sorted\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00052\ \ \ std::ifstream\ in(input\_file.c\_str());}
+\DoxyCodeLine{00053\ \ \ \textcolor{keywordflow}{if}\ (!in.is\_open())}
+\DoxyCodeLine{00054\ \ \ \{}
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{comment}{//std::cout\ <<\ input\_file\ <<\ "{}\ doesn't\ exist!\(\backslash\)n"{};}}
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00057\ \ \ \}}
+\DoxyCodeLine{00058\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00059\ \ \ \{}
+\DoxyCodeLine{00060\ \ \ \ \ std::string\ buffer;}
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{keywordtype}{int}\ prev\ =\ INT\_MIN,\ curr;}
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{keywordflow}{if}\ (reverse)}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ prev\ =\ INT\_MAX;}
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{keywordflow}{while}\ (!in.eof())}
+\DoxyCodeLine{00065\ \ \ \ \ \{}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ in\ >>\ curr;}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((curr\ <\ prev\ \&\&\ !reverse)\ ||\ (curr\ >\ prev\ \&\&\ reverse))}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ sorted\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \textcolor{comment}{//std::cout\ <<\ "{}Out\ of\ order:\ "{}\ <<\ prev\ <<\ "{},\ "{}\ <<\ curr\ <<\ std::endl;}}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ prev\ =\ curr;}
+\DoxyCodeLine{00074\ \ \ \ \ \}}
+\DoxyCodeLine{00075\ \ \ \}}
+\DoxyCodeLine{00076\ \ \ in.close();}
+\DoxyCodeLine{00077\ \ \ \textcolor{keywordflow}{return}\ sorted;}
+\DoxyCodeLine{00078\ \}}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \textcolor{keywordtype}{bool}\ blockSorted(\textcolor{keyword}{const}\ std::vector<size\_t>\ \&block,\ \textcolor{keywordtype}{bool}\ reverse\ =\ \textcolor{keyword}{false})}
+\DoxyCodeLine{00081\ \{}
+\DoxyCodeLine{00082\ \ \ \textcolor{keywordtype}{bool}\ sorted\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00083\ \ \ \textcolor{keywordtype}{int}\ prev\ =\ INT\_MIN,\ curr;}
+\DoxyCodeLine{00084\ \ \ \textcolor{keywordflow}{if}\ (reverse)}
+\DoxyCodeLine{00085\ \ \ \ \ prev\ =\ INT\_MAX;}
+\DoxyCodeLine{00086\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ block.size();\ i++)}
+\DoxyCodeLine{00087\ \ \ \{}
+\DoxyCodeLine{00088\ \ \ \ \ curr\ =\ block[i];}
+\DoxyCodeLine{00089\ \ \ \ \ \textcolor{keywordflow}{if}\ ((curr\ <\ prev\ \&\&\ !reverse)\ ||\ (curr\ >\ prev\ \&\&\ reverse))}
+\DoxyCodeLine{00090\ \ \ \ \ \{}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ sorted\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \textcolor{comment}{//std::cout\ <<\ "{}Out\ of\ order:\ "{}\ <<\ prev\ <<\ "{},\ "{}\ <<\ curr\ <<\ std::endl;}}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00094\ \ \ \ \ \}}
+\DoxyCodeLine{00095\ \ \ \ \ prev\ =\ curr;}
+\DoxyCodeLine{00096\ \ \ \}}
+\DoxyCodeLine{00097\ \ \ \textcolor{keywordflow}{return}\ sorted;}
+\DoxyCodeLine{00098\ \}}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \textcolor{comment}{/*-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00101\ \textcolor{comment}{\ \ Function:\ ComputeKthFibonacci}}
+\DoxyCodeLine{00102\ \textcolor{comment}{\ \ \ \ Compute\ K-\/th\ order\ Fibonacci\ number\ for\ computing\ number\ of\ blocks\ should\ store\ in\ each\ tape.}}
+\DoxyCodeLine{00103\ \textcolor{comment}{}}
+\DoxyCodeLine{00104\ \textcolor{comment}{\ \ Note:\ you\ may\ call\ this\ function\ as\ many\ times\ as\ needed.}}
+\DoxyCodeLine{00105\ \textcolor{comment}{-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/*/}}
+\DoxyCodeLine{00106\ \textcolor{keywordtype}{void}\ ComputeKthFibonacci(\textcolor{keywordtype}{void})}
+\DoxyCodeLine{00107\ \{}
+\DoxyCodeLine{00108\ \ \ \textcolor{comment}{/*\ formula:}}
+\DoxyCodeLine{00109\ \textcolor{comment}{\ \ \ \ F(k)(0,\ 1,\ ...,\ k-\/1)\ =\ 0,\ 0,\ ...,\ 1}}
+\DoxyCodeLine{00110\ \textcolor{comment}{\ \ \ \ F(k)(n)\ =\ F(k)(n\ −\ 1)\ +\ F(k)(n\ −\ 2)\ +\ ···\ +\ F(k)(n\ −\ k),\ n\ >=\ k}}
+\DoxyCodeLine{00111\ \textcolor{comment}{}}
+\DoxyCodeLine{00112\ \textcolor{comment}{\ \ \ \ when\ n\ ==\ k:}}
+\DoxyCodeLine{00113\ \textcolor{comment}{\ \ \ \ \ \ F(k)(k)\ =\ F(k)(k\ −\ 1)\ +\ F(k)(k\ −\ 2)\ +\ ···\ +\ F(k)(k\ −\ k)}}
+\DoxyCodeLine{00114\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 1\ \ \ \ \ \ \ \ \ \ \ +\ 0\ \ \ \ \ \ \ \ \ \ \ +\ ...\ +\ 0\ =\ 1}}
+\DoxyCodeLine{00115\ \textcolor{comment}{\ \ \ \ when\ n\ >\ k:}}
+\DoxyCodeLine{00116\ \textcolor{comment}{\ \ \ \ \ \ F(k)(n)\ \ \ \ \ =\ F(k)(n\ −\ 1)\ +\ F(k)(n\ −\ 2)\ +\ ···\ +\ F(k)(n\ −\ k)}}
+\DoxyCodeLine{00117\ \textcolor{comment}{\ \ \ \ \ \ F(k)(n)\ \ \ \ \ =\ F(k)(n\ −\ 1)\ +\ [F(k)(n\ −\ 2)\ +\ ···\ +\ F(k)(n\ −\ k)\ +\ F(k)(n\ −\ k-\/1)]\ -\/\ F(k)(n\ −\ k-\/1)}}
+\DoxyCodeLine{00118\ \textcolor{comment}{\ \ \ \ \ \ F(k)(n\ −\ 1)\ =\ F(k)(n\ −\ 2)\ +\ F(k)(n\ −\ 3)\ +\ ···\ +\ F(k)(n\ −\ k)\ +\ F(k)(n\ −\ k-\/1)}}
+\DoxyCodeLine{00119\ \textcolor{comment}{\ \ \ \ \ \ F(k)(n)\ \ \ \ \ =\ 2*F(k)(n\ −\ 1)\ -\/\ F(k)(n\ −\ k-\/1)}}
+\DoxyCodeLine{00120\ \textcolor{comment}{\ \ */}}
+\DoxyCodeLine{00121\ \ \ \textcolor{keywordtype}{int}\ k\ =\ TOTAL\_TAPES\ -\/\ 1;}
+\DoxyCodeLine{00122\ \ \ \textcolor{keywordflow}{if}\ (fibo\_series.empty())\ \textcolor{comment}{//\ initial\ fibo\_series}}
+\DoxyCodeLine{00123\ \ \ \{}
+\DoxyCodeLine{00124\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ k\ -\/\ 1;\ i++)}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ fibo\_series.push\_back(0);}
+\DoxyCodeLine{00126\ \ \ \ \ fibo\_series.push\_back(1);}
+\DoxyCodeLine{00127\ \ \ \ \ fibo\_series.push\_back(1);\ \textcolor{comment}{//\ this\ is\ fibo\_series[k]}}
+\DoxyCodeLine{00128\ \ \ \}}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ 100;\ i++)\ \textcolor{comment}{//\ compute\ next\ 100\ items\ for\ usage}}
+\DoxyCodeLine{00131\ \ \ \{}
+\DoxyCodeLine{00132\ \ \ \ \ \textcolor{keywordtype}{int}\ n\ =\ fibo\_series.size();}
+\DoxyCodeLine{00133\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ new\_item\ =\ 2\ *\ fibo\_series[n\ -\/\ 1]\ -\/\ fibo\_series[n\ -\/\ k\ -\/\ 1];}
+\DoxyCodeLine{00134\ \ \ \ \ fibo\_series.push\_back(new\_item);}
+\DoxyCodeLine{00135\ \ \ \}}
+\DoxyCodeLine{00136\ \}}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \textcolor{comment}{/*-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00139\ \textcolor{comment}{\ \ Function:\ GetBlocksAt}}
+\DoxyCodeLine{00140\ \textcolor{comment}{\ \ \ \ get\ the\ number\ of\ blocks\ you\ should\ write\ to\ at\ current\ pass.}}
+\DoxyCodeLine{00141\ \textcolor{comment}{\ \ Vairables:}}
+\DoxyCodeLine{00142\ \textcolor{comment}{\ \ \ \ pass\ \ \ \ \ \ -\/\ current\ pass\ of\ PolyPhaseMergePass.}}
+\DoxyCodeLine{00143\ \textcolor{comment}{\ \ \ \ blocks\_at\ -\/\ where\ you\ want\ to\ store\ the\ block\ counts\ of\ eath\ tape\ to.}}
+\DoxyCodeLine{00144\ \textcolor{comment}{}}
+\DoxyCodeLine{00145\ \textcolor{comment}{\ \ Note:}}
+\DoxyCodeLine{00146\ \textcolor{comment}{\ \ For\ the\ t-\/th\ input\ tape\ at\ pass\ n,\ it\ should\ hold\ blocks\_at[t]\ blocks:}}
+\DoxyCodeLine{00147\ \textcolor{comment}{\ \ \ \ blocks\_at[t]\ =\ F(k)(n+k-\/2)\ +\ F(k)(n+k-\/3)\ +\ ...\ +\ F(k)(n+t-\/2),\ t\ =\ 1,\ 2,\ ...,\ k}}
+\DoxyCodeLine{00148\ \textcolor{comment}{-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/*/}}
+\DoxyCodeLine{00149\ \textcolor{keywordtype}{void}\ GetBlocksAt(\textcolor{keywordtype}{int}\ pass,\ std::vector<int>\ \&blocks\_at)}
+\DoxyCodeLine{00150\ \{}
+\DoxyCodeLine{00151\ \ \ \textcolor{keywordflow}{if}\ (pass\ <\ 1)}
+\DoxyCodeLine{00152\ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00153\ \ \ \textcolor{keywordtype}{int}\ k\ =\ TOTAL\_TAPES\ -\/\ 1;}
+\DoxyCodeLine{00154\ \ \ blocks\_at\ =\ std::vector<int>(k,\ 0);}
+\DoxyCodeLine{00155\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ t\ =\ 0;\ t\ <\ k;\ t++)}
+\DoxyCodeLine{00156\ \ \ \{}
+\DoxyCodeLine{00157\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ tmp\_i\ =\ pass\ +\ t\ -\/\ 1;\ tmp\_i\ <=\ pass\ +\ k\ -\/\ 2;\ tmp\_i++)}
+\DoxyCodeLine{00158\ \ \ \ \ \{}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (tmp\_i\ >=\ fibo\_series.size())}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ ComputeKthFibonacci();\ \textcolor{comment}{//\ compute\ more\ fibo\_series}}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ blocks\_at[t]\ +=\ fibo\_series[tmp\_i];}
+\DoxyCodeLine{00162\ \ \ \ \ \}}
+\DoxyCodeLine{00163\ \ \ \}}
+\DoxyCodeLine{00164\ \}}
+\DoxyCodeLine{00165\ }
+\DoxyCodeLine{00166\ \textcolor{comment}{/*-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00167\ \textcolor{comment}{\ \ The\ insertion\ sort\ algorithm.}}
+\DoxyCodeLine{00168\ \textcolor{comment}{}}
+\DoxyCodeLine{00169\ \textcolor{comment}{\ \ Variables:}}
+\DoxyCodeLine{00170\ \textcolor{comment}{\ \ \ a\ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/\ the\ input\ array}}
+\DoxyCodeLine{00171\ \textcolor{comment}{\ \ \ left\ and\ right\ -\/\ the\ left\ and\ end\ indexes\ of\ the\ range\ of\ the\ elements\ to\ be\ sorted,\ inclusive}}
+\DoxyCodeLine{00172\ \textcolor{comment}{\ \ \ reverse\ \ \ \ \ \ \ \ -\/\ if\ set\ true,\ sort\ in\ descending\ order.\ Default:\ false}}
+\DoxyCodeLine{00173\ \textcolor{comment}{\ \ (Hint:\ You\ can\ reuse\ your\ implementation\ from\ Lab\ 01)}}
+\DoxyCodeLine{00174\ \textcolor{comment}{-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/*/}}
+\DoxyCodeLine{00175\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Comparable>}
+\DoxyCodeLine{00176\ \textcolor{keywordtype}{void}\ InsertionSort(std::vector<Comparable>\ \&a,\ \textcolor{keywordtype}{int}\ left,\ \textcolor{keywordtype}{int}\ right,\ \textcolor{keywordtype}{bool}\ reverse\ =\ \textcolor{keyword}{false})}
+\DoxyCodeLine{00177\ \{}
+\DoxyCodeLine{00178\ \ \ \textcolor{comment}{/*-\/-\/-\/-\/-\/-\/\ CODE\ BEGINS\ -\/-\/-\/-\/-\/-\/*/}}
+\DoxyCodeLine{00179\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ left;\ i\ <=\ right;\ i++)}
+\DoxyCodeLine{00180\ \ \ \{}
+\DoxyCodeLine{00181\ \ \ \ \ Comparable\ tmp\ =\ std::move(a[i]);}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \ \ \ \ \textcolor{keywordtype}{int}\ j;}
+\DoxyCodeLine{00184\ \ \ \ \ \textcolor{keywordflow}{if}\ (reverse\ ==\ \textcolor{keyword}{false})}
+\DoxyCodeLine{00185\ \ \ \ \ \{}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (j\ =\ i;\ j\ >\ left\ \&\&\ tmp\ <\ a[j\ -\/\ 1];\ -\/-\/j)}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ a[j]\ =\ std::move(a[j\ -\/\ 1]);}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00190\ \ \ \ \ \}}
+\DoxyCodeLine{00191\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00192\ \ \ \ \ \{}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (j\ =\ i;\ j\ >\ left\ \&\&\ tmp\ >\ a[j\ -\/\ 1];\ -\/-\/j)}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ a[j]\ =\ std::move(a[j\ -\/\ 1]);}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00197\ \ \ \ \ \}}
+\DoxyCodeLine{00198\ \ \ \ \ a[j]\ =\ std::move(tmp);}
+\DoxyCodeLine{00199\ \ \ \}}
+\DoxyCodeLine{00200\ }
+\DoxyCodeLine{00201\ \ \ \textcolor{comment}{/*-\/-\/-\/-\/-\/-\/\ CODE\ ENDS\ -\/-\/-\/-\/-\/-\/*/}}
+\DoxyCodeLine{00202\ \}}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00204\ \textcolor{comment}{/*-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00205\ \textcolor{comment}{basic\ function\ for\ printing\ vectors\ of\ any\ comparable\ type}}
+\DoxyCodeLine{00206\ \textcolor{comment}{\ \ a[0,\ 1,\ 2,\ 3,\ 4]}}
+\DoxyCodeLine{00207\ \textcolor{comment}{\ \ Print(a)}}
+\DoxyCodeLine{00208\ \textcolor{comment}{\ \ \ \ 0,\ 1,\ 2,\ 3,\ 4}}
+\DoxyCodeLine{00209\ \textcolor{comment}{-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/*/}}
+\DoxyCodeLine{00210\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Comparable>}
+\DoxyCodeLine{00211\ \textcolor{keywordtype}{void}\ Print(std::vector<Comparable>\ \&a)}
+\DoxyCodeLine{00212\ \{}
+\DoxyCodeLine{00213\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ a.size();\ i++)}
+\DoxyCodeLine{00214\ \ \ \{}
+\DoxyCodeLine{00215\ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ +\ 1\ <\ a.size())}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ std::cout\ <<\ a[i]\ <<\ \textcolor{stringliteral}{"{},\ "{}};}
+\DoxyCodeLine{00217\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ std::cout\ <<\ a[i]\ <<\ std::endl;}
+\DoxyCodeLine{00219\ \ \ \}}
+\DoxyCodeLine{00220\ \}}
+\DoxyCodeLine{00221\ }
+\DoxyCodeLine{00222\ \textcolor{comment}{/*-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00223\ \textcolor{comment}{function\ for\ finding\ the\ number\ of\ blocks\ on\ a\ tape\ -\/\ testing\ purposes}}
+\DoxyCodeLine{00224\ \textcolor{comment}{-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/*/}}
+\DoxyCodeLine{00225\ \textcolor{keywordtype}{int}\ numBlockOnTape(std::string\ tapeName)}
+\DoxyCodeLine{00226\ \{}
+\DoxyCodeLine{00227\ \ \ ifstream\ in(tapeName.c\_str());}
+\DoxyCodeLine{00228\ \ \ std::string\ buffer\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00229\ \ \ \textcolor{keywordtype}{int}\ numBlocks\ =\ 0;}
+\DoxyCodeLine{00230\ \ \ \textcolor{keywordtype}{int}\ numElems\ =\ 0;}
+\DoxyCodeLine{00231\ \ \ \textcolor{keywordflow}{while}\ (!in.eof())}
+\DoxyCodeLine{00232\ \ \ \{}
+\DoxyCodeLine{00233\ \ \ \ \ getline(in,\ buffer);}
+\DoxyCodeLine{00234\ \ \ \ \ numElems++;}
+\DoxyCodeLine{00235\ \ \ \ \ \textcolor{keywordflow}{if}\ (numElems\ ==\ BATCH\_SIZE)}
+\DoxyCodeLine{00236\ \ \ \ \ \{}
+\DoxyCodeLine{00237\ \ \ \ \ \ \ numBlocks++;}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ numElems\ =\ 0;}
+\DoxyCodeLine{00239\ \ \ \ \ \}}
+\DoxyCodeLine{00240\ \ \ \}}
+\DoxyCodeLine{00241\ \ \ \textcolor{keywordflow}{if}\ (numElems\ !=\ 0)}
+\DoxyCodeLine{00242\ \ \ \{}
+\DoxyCodeLine{00243\ \ \ \ \ numBlocks++;}
+\DoxyCodeLine{00244\ \ \ \}}
+\DoxyCodeLine{00245\ \ \ in.close();}
+\DoxyCodeLine{00246\ \ \ \textcolor{keywordflow}{return}\ numBlocks;}
+\DoxyCodeLine{00247\ \}}
+\DoxyCodeLine{00248\ }
+\DoxyCodeLine{00249\ \textcolor{comment}{/*-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00250\ \textcolor{comment}{function\ to\ get\ the\ first\ block\ from\ a\ tape}}
+\DoxyCodeLine{00251\ \textcolor{comment}{also\ removes\ the\ first\ block\ from\ that\ tape}}
+\DoxyCodeLine{00252\ \textcolor{comment}{-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/*/}}
+\DoxyCodeLine{00253\ std::vector<size\_t>\ getFirstBlock(std::string\ tapeName)}
+\DoxyCodeLine{00254\ \{}
+\DoxyCodeLine{00255\ \ \ ifstream\ in(tapeName.c\_str());}
+\DoxyCodeLine{00256\ \ \ ofstream\ out(\textcolor{stringliteral}{"{}temp.txt"{}});}
+\DoxyCodeLine{00257\ \ \ std::string\ buffer\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00258\ \ \ std::vector<size\_t>\ blockArr;}
+\DoxyCodeLine{00259\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ BATCH\_SIZE;\ i++)}
+\DoxyCodeLine{00260\ \ \ \{}
+\DoxyCodeLine{00261\ \ \ \ \ \textcolor{keywordflow}{if}\ (!(in.is\_open()))}
+\DoxyCodeLine{00262\ \ \ \ \ \{}
+\DoxyCodeLine{00263\ \ \ \ \ \ \ std::cout\ <<\ \textcolor{stringliteral}{"{}ERROR"{}}\ <<\ std::endl;}
+\DoxyCodeLine{00264\ \ \ \ \ \}}
+\DoxyCodeLine{00265\ \ \ \ \ getline(in,\ buffer);}
+\DoxyCodeLine{00266\ \ \ \ \ blockArr.push\_back(\textcolor{keywordtype}{size\_t}(atoi(buffer.c\_str())));}
+\DoxyCodeLine{00267\ \ \ \}}
+\DoxyCodeLine{00268\ \ \ \textcolor{keywordflow}{while}\ (in.peek()\ !=\ EOF)}
+\DoxyCodeLine{00269\ \ \ \{}
+\DoxyCodeLine{00270\ \ \ \ \ getline(in,\ buffer);}
+\DoxyCodeLine{00271\ \ \ \ \ out\ <<\ buffer\ <<\ endl;}
+\DoxyCodeLine{00272\ \ \ \}}
+\DoxyCodeLine{00273\ \ \ in.close();}
+\DoxyCodeLine{00274\ \ \ out.close();}
+\DoxyCodeLine{00275\ }
+\DoxyCodeLine{00276\ \ \ \textcolor{comment}{//\ remove\ original\ file,\ rename\ temp\ file\ to\ original\ file\ name}}
+\DoxyCodeLine{00277\ \ \ remove(tapeName.c\_str());}
+\DoxyCodeLine{00278\ \ \ rename(\textcolor{stringliteral}{"{}temp.txt"{}},\ tapeName.c\_str());}
+\DoxyCodeLine{00279\ \ \ \textcolor{keywordflow}{return}\ blockArr;}
+\DoxyCodeLine{00280\ \}}
+\DoxyCodeLine{00281\ }
+\DoxyCodeLine{00282\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00283\ \textcolor{comment}{\ \ function\ that\ counts\ the\ total\ number\ of\ elements\ in\ all\ of\ the\ tapes}}
+\DoxyCodeLine{00284\ \textcolor{comment}{*/}}
+\DoxyCodeLine{00285\ \textcolor{keywordtype}{int}\ countTotalElements(std::vector<std::string>\ \&ext\_arrays)}
+\DoxyCodeLine{00286\ \{}
+\DoxyCodeLine{00287\ \ \ \textcolor{keywordtype}{int}\ totalElements\ =\ 0;}
+\DoxyCodeLine{00288\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ ext\_arrays.size()\ -\/\ 1;\ i++)}
+\DoxyCodeLine{00289\ \ \ \{}
+\DoxyCodeLine{00290\ \ \ \ \ ifstream\ in(ext\_arrays[i].c\_str());}
+\DoxyCodeLine{00291\ \ \ \ \ std::string\ buffer\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00292\ \ \ \ \ \textcolor{keywordflow}{if}\ (!in.is\_open())}
+\DoxyCodeLine{00293\ \ \ \ \ \{}
+\DoxyCodeLine{00294\ \ \ \ \ \ \ std::cout\ <<\ \textcolor{stringliteral}{"{}ERROR"{}}\ <<\ std::endl;}
+\DoxyCodeLine{00295\ \ \ \ \ \}}
+\DoxyCodeLine{00296\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00297\ \ \ \ \ \{}
+\DoxyCodeLine{00298\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (!in.eof())}
+\DoxyCodeLine{00299\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00300\ \ \ \ \ \ \ \ \ getline(in,\ buffer);}
+\DoxyCodeLine{00301\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (buffer\ !=\ \textcolor{stringliteral}{"{}\$"{}}\ \&\&\ buffer\ !=\ \textcolor{stringliteral}{"{}"{}})}
+\DoxyCodeLine{00302\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00303\ \ \ \ \ \ \ \ \ \ \ totalElements++;}
+\DoxyCodeLine{00304\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00305\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00306\ \ \ \ \ \}}
+\DoxyCodeLine{00307\ \ \ \ \ in.close();}
+\DoxyCodeLine{00308\ \ \ \}}
+\DoxyCodeLine{00309\ \ \ \textcolor{keywordflow}{return}\ totalElements;}
+\DoxyCodeLine{00310\ \}}
+\DoxyCodeLine{00311\ \textcolor{keywordtype}{int}\ countElemsOnTape(\textcolor{keywordtype}{string}\ tapeName)}
+\DoxyCodeLine{00312\ \{}
+\DoxyCodeLine{00313\ \ \ \textcolor{keywordtype}{int}\ totalElements\ =\ 0;}
+\DoxyCodeLine{00314\ }
+\DoxyCodeLine{00315\ \ \ ifstream\ in(tapeName.c\_str());}
+\DoxyCodeLine{00316\ \ \ std::string\ buffer\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00317\ \ \ \textcolor{keywordflow}{while}\ (!in.eof())}
+\DoxyCodeLine{00318\ \ \ \{}
+\DoxyCodeLine{00319\ \ \ \ \ getline(in,\ buffer);}
+\DoxyCodeLine{00320\ \ \ \ \ \textcolor{keywordflow}{if}\ (buffer\ !=\ \textcolor{stringliteral}{"{}\$"{}}\ \&\&\ buffer\ !=\ \textcolor{stringliteral}{"{}"{}})}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ totalElements++;}
+\DoxyCodeLine{00322\ \ \ \}}
+\DoxyCodeLine{00323\ \ \ in.close();}
+\DoxyCodeLine{00324\ \ \ \textcolor{keywordflow}{return}\ totalElements;}
+\DoxyCodeLine{00325\ \}}
+\DoxyCodeLine{00326\ }
+\DoxyCodeLine{00327\ \textcolor{keywordtype}{bool}\ EmptyTapes(vector<fstream>\ \&fileStreams,\ \textcolor{keywordtype}{int}\ outIndex)}
+\DoxyCodeLine{00328\ \{}
+\DoxyCodeLine{00329\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ fileStreams.size();\ i++)}
+\DoxyCodeLine{00330\ \ \ \{}
+\DoxyCodeLine{00331\ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ !=\ outIndex)}
+\DoxyCodeLine{00332\ \ \ \ \ \{}
+\DoxyCodeLine{00333\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fileStreams[i].eof())}
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00335\ \ \ \ \ \ \ \ \ \textcolor{comment}{//cout\ <<\ i\ <<\ "{}\ is\ empty"{}\ <<\ endl;}}
+\DoxyCodeLine{00336\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00337\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00338\ \ \ \ \ \}}
+\DoxyCodeLine{00339\ \ \ \}}
+\DoxyCodeLine{00340\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00341\ \}}
+\DoxyCodeLine{00342\ }
+\DoxyCodeLine{00343\ \textcolor{keywordtype}{int}\ numEmptyTapes(vector<fstream>\ \&fileStreams,\ \textcolor{keywordtype}{int}\ outIndex)}
+\DoxyCodeLine{00344\ \{}
+\DoxyCodeLine{00345\ \ \ \textcolor{keywordtype}{int}\ result\ =\ 0;}
+\DoxyCodeLine{00346\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ fileStreams.size();\ i++)}
+\DoxyCodeLine{00347\ \ \ \{}
+\DoxyCodeLine{00348\ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ !=\ outIndex)}
+\DoxyCodeLine{00349\ \ \ \ \ \{}
+\DoxyCodeLine{00350\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fileStreams[i].eof())}
+\DoxyCodeLine{00351\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00352\ \ \ \ \ \ \ \ \ result++;}
+\DoxyCodeLine{00353\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00354\ \ \ \ \ \}}
+\DoxyCodeLine{00355\ \ \ \}}
+\DoxyCodeLine{00356\ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00357\ \}}
+\DoxyCodeLine{00358\ }
+\DoxyCodeLine{00359\ \textcolor{keywordtype}{int}\ getEmptyTape(vector<fstream>\ \&fileStreams,\ \textcolor{keywordtype}{int}\ outIndex)}
+\DoxyCodeLine{00360\ \{}
+\DoxyCodeLine{00361\ \ \ \textcolor{keywordtype}{int}\ result\ =\ -\/1;}
+\DoxyCodeLine{00362\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ fileStreams.size();\ i++)}
+\DoxyCodeLine{00363\ \ \ \{}
+\DoxyCodeLine{00364\ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ !=\ outIndex)}
+\DoxyCodeLine{00365\ \ \ \ \ \{}
+\DoxyCodeLine{00366\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fileStreams[i].eof())}
+\DoxyCodeLine{00367\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00368\ \ \ \ \ \ \ \ \ \textcolor{comment}{//cout\ <<\ "{}in\ getEmptyTape()\ "{}\ <<\ i\ <<\ endl;}}
+\DoxyCodeLine{00369\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (result\ ==\ -\/1)}
+\DoxyCodeLine{00370\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00371\ \ \ \ \ \ \ \ \ \ \ result\ =\ i;}
+\DoxyCodeLine{00372\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00373\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00374\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00375\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//cout\ <<\ "{}More\ than\ one\ empty\ tape!!"{}\ <<\ endl;}}
+\DoxyCodeLine{00376\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00377\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00378\ \ \ \ \ \}}
+\DoxyCodeLine{00379\ \ \ \}}
+\DoxyCodeLine{00380\ }
+\DoxyCodeLine{00381\ \ \ \textcolor{comment}{//cout\ <<\ "{}getEmptyTape()\ returning\ "{}\ <<\ result\ <<\ endl;}}
+\DoxyCodeLine{00382\ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00383\ \}}
+\DoxyCodeLine{00384\ }
+\DoxyCodeLine{00385\ \textcolor{comment}{/*-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00386\ \textcolor{comment}{\ \ \ Function:\ LoadSortInputBlocks}}
+\DoxyCodeLine{00387\ \textcolor{comment}{\ \ \ You\ should:}}
+\DoxyCodeLine{00388\ \textcolor{comment}{\ \ \ \ \ X\ (1)\ Loads\ input\ data\ as\ blocks;}}
+\DoxyCodeLine{00389\ \textcolor{comment}{\ \ \ \ \ X\ (2)\ sort\ each\ block\ internally;}}
+\DoxyCodeLine{00390\ \textcolor{comment}{\ \ \ \ \ X\ (3)\ distribute\ blocks\ to\ the\ tapes\ for\ PolyPhaseMerge;}}
+\DoxyCodeLine{00391\ \textcolor{comment}{\ \ \ \ \ X\ (4)\ return\ how\ many\ passes\ you\ need\ to\ perform\ the\ PolyPhaseMerge.}}
+\DoxyCodeLine{00392\ \textcolor{comment}{}}
+\DoxyCodeLine{00393\ \textcolor{comment}{\ \ \ Vairables:}}
+\DoxyCodeLine{00394\ \textcolor{comment}{\ \ \ \ \ input\_file\ \ -\/\ the\ file\ name\ that\ contains\ the\ inputs}}
+\DoxyCodeLine{00395\ \textcolor{comment}{\ \ \ \ \ ext\_arrays\ \ -\/\ names\ of\ the\ files\ that\ serve\ as\ the\ external\ tapes}}
+\DoxyCodeLine{00396\ \textcolor{comment}{\ \ \ \ \ reverse\ \ \ \ \ -\/\ if\ set\ true,\ sort\ in\ descending\ order;\ otherwise\ in\ ascending\ order}}
+\DoxyCodeLine{00397\ \textcolor{comment}{-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/*/}}
+\DoxyCodeLine{00398\ }
+\DoxyCodeLine{00399\ \textcolor{keywordtype}{int}\ LoadSortInputBlocks(}
+\DoxyCodeLine{00400\ \ \ \ \ \textcolor{keyword}{const}\ std::string\ \&input\_file,}
+\DoxyCodeLine{00401\ \ \ \ \ \textcolor{keyword}{const}\ std::vector<std::string>\ \&ext\_arrays,}
+\DoxyCodeLine{00402\ \ \ \ \ \textcolor{keywordtype}{bool}\ reverse\ =\ \textcolor{keyword}{false})}
+\DoxyCodeLine{00403\ \{}
+\DoxyCodeLine{00404\ \ \ \textcolor{keywordtype}{int}\ block\ =\ BATCH\_SIZE;}
+\DoxyCodeLine{00405\ \ \ \textcolor{keywordtype}{int}\ cnt\_pass\ =\ 1;\ \textcolor{comment}{//\ initializing\ to\ one\ -\/\ this\ will\ represent\ the\ number\ of\ passes\ needed\ for\ polyphase\ merge}}
+\DoxyCodeLine{00406\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ internally\ to\ this\ function,\ this\ will\ represent\ the\ current\ pass\ of\ distributing\ blocks\ to\ tapes}}
+\DoxyCodeLine{00407\ \ \ std::vector<int>\ blocksPerTape;}
+\DoxyCodeLine{00408\ \ \ \textcolor{comment}{//\ initialize\ blocksPerTape\ for\ first\ pass}}
+\DoxyCodeLine{00409\ \ \ GetBlocksAt(cnt\_pass,\ blocksPerTape);}
+\DoxyCodeLine{00410\ }
+\DoxyCodeLine{00411\ \ \ \textcolor{comment}{/*-\/-\/-\/-\/-\/-\/\ CODE\ BEGINS\ -\/-\/-\/-\/-\/-\/*/}}
+\DoxyCodeLine{00412\ \ \ \textcolor{comment}{/*}}
+\DoxyCodeLine{00413\ \textcolor{comment}{\ \ \ \ \ \ open\ all\ the\ tapes}}
+\DoxyCodeLine{00414\ \textcolor{comment}{\ \ \ \ \ \ tape\_count\ =\ 0;}}
+\DoxyCodeLine{00415\ \textcolor{comment}{\ \ \ \ \ \ read\ block,\ sort\ block,\ write\ to\ first\ tape,}}
+\DoxyCodeLine{00416\ \textcolor{comment}{\ \ \ \ \ \ \ \ if\ \#\ blocks\ on\ a\ tape\ is\ >\ getBlocksAt(\ that\ tape\ )}}
+\DoxyCodeLine{00417\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ then\ go\ to\ next\ tape}}
+\DoxyCodeLine{00418\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ increment\ tape\_count}}
+\DoxyCodeLine{00419\ \textcolor{comment}{\ \ \ \ \ \ \ \ otherwise}}
+\DoxyCodeLine{00420\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ keep\ writing\ blocks\ to\ same\ tape}}
+\DoxyCodeLine{00421\ \textcolor{comment}{\ \ \ \ \ \ increase\ cnt\_pass\ IF\ tape\_count\ >\ TOTAL\_TAPES\ -\/\ 1\ (15)}}
+\DoxyCodeLine{00422\ \textcolor{comment}{\ \ */}}
+\DoxyCodeLine{00423\ \ \ \textcolor{comment}{//\ OPEN\ ALL\ THE\ TAPES}}
+\DoxyCodeLine{00424\ \ \ \textcolor{comment}{//\ DistBlocks\ <\ stream\ object,\ \#\ of\ blocks\ on\ that\ tape\ >}}
+\DoxyCodeLine{00425\ \ \ vector<pair<ofstream,\ size\_t>>\ DistBlocks(ext\_arrays.size());}
+\DoxyCodeLine{00426\ \ \ \textcolor{keywordtype}{size\_t}\ tape\_count\ =\ 0;}
+\DoxyCodeLine{00427\ \ \ ifstream\ in(input\_file.c\_str());}
+\DoxyCodeLine{00428\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ ext\_arrays.size()\ -\/\ 1;\ i++)}
+\DoxyCodeLine{00429\ \ \ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ DistBlocks\ is\ vector\ of\ ofstream\ objects}}
+\DoxyCodeLine{00430\ \ \ \ \ DistBlocks[i].first.open(ext\_arrays[i].c\_str());\ \textcolor{comment}{//\ open\ stream\ object}}
+\DoxyCodeLine{00431\ \ \ \ \ DistBlocks[i].second\ =\ 0;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ initialize\ \#\ of\ blocks\ on\ each\ tape\ to\ 0}}
+\DoxyCodeLine{00432\ \ \ \}}
+\DoxyCodeLine{00433\ }
+\DoxyCodeLine{00434\ \ \ \textcolor{comment}{//\ blockArr\ will\ hold\ the\ values\ of\ the\ current\ block}}
+\DoxyCodeLine{00435\ \ \ vector<size\_t>\ blockArr;}
+\DoxyCodeLine{00436\ \ \ std::string\ buffer\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00437\ \ \ \textcolor{keywordflow}{while}\ (!in.eof())}
+\DoxyCodeLine{00438\ \ \ \{}
+\DoxyCodeLine{00439\ \ \ \ \ \textcolor{comment}{//\ read\ block\ from\ input\ file\ into\ blockArr}}
+\DoxyCodeLine{00440\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ BATCH\_SIZE;\ i++)}
+\DoxyCodeLine{00441\ \ \ \ \ \{}
+\DoxyCodeLine{00442\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!(in.is\_open()))}
+\DoxyCodeLine{00443\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00444\ \ \ \ \ \ \ \ \ \textcolor{comment}{//std::cout\ <<\ "{}LoadInputSort\ Error"{}\ <<\ std::endl;}}
+\DoxyCodeLine{00445\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00446\ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00447\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00448\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!in.eof())}
+\DoxyCodeLine{00449\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00450\ \ \ \ \ \ \ \ \ \ \ getline(in,\ buffer);}
+\DoxyCodeLine{00451\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (buffer\ !=\ \textcolor{stringliteral}{"{}"{}})}
+\DoxyCodeLine{00452\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00453\ \ \ \ \ \ \ \ \ \ \ \ \ blockArr.push\_back((stoi(buffer)));}
+\DoxyCodeLine{00454\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00455\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00456\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00457\ \ \ \ \ \}}
+\DoxyCodeLine{00458\ \ \ \ \ \textcolor{comment}{//\ sort\ blockArr}}
+\DoxyCodeLine{00459\ \ \ \ \ InsertionSort(blockArr,\ 0,\ blockArr.size()\ -\/\ 1,\ reverse);}
+\DoxyCodeLine{00460\ }
+\DoxyCodeLine{00461\ \ \ \ \ \textcolor{comment}{//\ write\ blockArr\ to\ tape\ ext\_arrays[tape\_count]}}
+\DoxyCodeLine{00462\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ blockArr.size();\ i++)}
+\DoxyCodeLine{00463\ \ \ \ \ \{}
+\DoxyCodeLine{00464\ \ \ \ \ \ \ DistBlocks[tape\_count].first\ <<\ blockArr[i]\ <<\ endl;\ \textcolor{comment}{//\ write\ block\ to\ tape}}
+\DoxyCodeLine{00465\ \ \ \ \ \}}
+\DoxyCodeLine{00466\ \ \ \ \ DistBlocks[tape\_count].second++;\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ increment\ \#\ of\ blocks\ on\ that\ tape}}
+\DoxyCodeLine{00467\ \ \ \ \ DistBlocks[tape\_count].first\ <<\ \textcolor{stringliteral}{"{}\$"{}}\ <<\ endl;\ \textcolor{comment}{//\ write\ delimiter\ to\ tape"{};}}
+\DoxyCodeLine{00468\ }
+\DoxyCodeLine{00469\ \ \ \ \ \textcolor{comment}{//\ if\ \#\ of\ blocks\ on\ tape\ is\ >=\ getBlocksAt(tape\_count)}}
+\DoxyCodeLine{00470\ \ \ \ \ \textcolor{keywordflow}{if}\ (DistBlocks[tape\_count].second\ >=\ blocksPerTape[tape\_count])}
+\DoxyCodeLine{00471\ \ \ \ \ \{}
+\DoxyCodeLine{00472\ \ \ \ \ \ \ \textcolor{comment}{//\ go\ to\ next\ tape}}
+\DoxyCodeLine{00473\ \ \ \ \ \ \ tape\_count++;}
+\DoxyCodeLine{00474\ \ \ \ \ \}}
+\DoxyCodeLine{00475\ \ \ \ \ \textcolor{keywordflow}{if}\ (tape\_count\ >=\ TOTAL\_TAPES\ -\/\ 1)}
+\DoxyCodeLine{00476\ \ \ \ \ \{}
+\DoxyCodeLine{00477\ \ \ \ \ \ \ \textcolor{comment}{//\ increment\ cnt\_pass}}
+\DoxyCodeLine{00478\ \ \ \ \ \ \ cnt\_pass++;}
+\DoxyCodeLine{00479\ \ \ \ \ \ \ \textcolor{comment}{//\ reset\ tape\_count}}
+\DoxyCodeLine{00480\ \ \ \ \ \ \ tape\_count\ =\ 0;}
+\DoxyCodeLine{00481\ \ \ \ \ \ \ \textcolor{comment}{//\ get\ blocksPerTape\ for\ next\ pass\ }}
+\DoxyCodeLine{00482\ \ \ \ \ \ \ GetBlocksAt(cnt\_pass,\ blocksPerTape);}
+\DoxyCodeLine{00483\ \ \ \ \ \}}
+\DoxyCodeLine{00484\ \ \ \ \ \textcolor{comment}{//\ clear\ blockArr}}
+\DoxyCodeLine{00485\ \ \ \ \ blockArr.clear();}
+\DoxyCodeLine{00486\ \ \ \}}
+\DoxyCodeLine{00487\ \ \ \textcolor{keywordflow}{for}(\ \textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ DistBlocks.size();\ i++)\{}
+\DoxyCodeLine{00488\ \ \ \ \ \textcolor{keywordflow}{while}(DistBlocks[i].second\ <\ blocksPerTape[i])\{}
+\DoxyCodeLine{00489\ \ \ \ \ \ \ DistBlocks[i].first\ <<\ \textcolor{stringliteral}{"{}\$"{}}\ <<\ endl;}
+\DoxyCodeLine{00490\ \ \ \ \ \ \ DistBlocks[i].second++;}
+\DoxyCodeLine{00491\ \ \ \ \ \}}
+\DoxyCodeLine{00492\ \ \ \}}
+\DoxyCodeLine{00493\ \ \ \textcolor{comment}{//\ now,\ since\ the\ input\ file\ has\ been\ distributed,\ we\ should\ check\ that\ the\ number\ of\ blocks\ on\ every\ tape\ }}
+\DoxyCodeLine{00494\ \ \ \textcolor{comment}{//\ ==\ the\ number\ of\ blocks\ that\ should\ be\ on\ that\ tape}}
+\DoxyCodeLine{00495\ \ \ \textcolor{comment}{//\ if\ not,\ write\ "{}\$"{}\ to\ delimit\ a\ "{}fake"{}\ dummy\ block}}
+\DoxyCodeLine{00496\ \ \ \textcolor{comment}{//std::cout\ <<\ "{}cnt\_pass:\ "{}\ <<\ cnt\_pass\ <<\ endl;}}
+\DoxyCodeLine{00497\ \ \ \textcolor{keywordflow}{return}\ cnt\_pass;}
+\DoxyCodeLine{00498\ \}}
+\DoxyCodeLine{00499\ }
+\DoxyCodeLine{00500\ \textcolor{comment}{/*-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00501\ \textcolor{comment}{\ \ \ Function:\ PolyPhaseMerge}}
+\DoxyCodeLine{00502\ \textcolor{comment}{\ \ \ You\ should}}
+\DoxyCodeLine{00503\ \textcolor{comment}{\ \ \ \ \ (1)\ load\ data\ from\ k\ external\ tapes}}
+\DoxyCodeLine{00504\ \textcolor{comment}{\ \ \ \ \ (2)\ repeat\ (3)\ until\ you\ have\ merged\ all\ blocks\ in\ any\ one\ of\ the\ tapes:}}
+\DoxyCodeLine{00505\ \textcolor{comment}{\ \ \ \ \ (3)\ merge\ one\ block\ from\ each\ tape\ into\ one\ block,\ and\ write\ the\ merged\ block\ into\ an\ external\ tape.}}
+\DoxyCodeLine{00506\ \textcolor{comment}{\ \ \ \ \ (4)\ clean\ up\ intermediate\ files.}}
+\DoxyCodeLine{00507\ \textcolor{comment}{}}
+\DoxyCodeLine{00508\ \textcolor{comment}{\ \ \ Vairables:}}
+\DoxyCodeLine{00509\ \textcolor{comment}{\ \ \ \ \ cnt\_pass\ \ \ \ -\/\ total\ number\ of\ passes\ you\ need\ to\ perform\ PolyPhaseMerges,}}
+\DoxyCodeLine{00510\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ this\ is\ computed\ from\ LoadSortInputBlocks}}
+\DoxyCodeLine{00511\ \textcolor{comment}{\ \ \ \ \ ext\_arrays\ \ -\/\ the\ names\ of\ the\ list\ of\ files\ that\ serve\ as\ the\ external\ arrays}}
+\DoxyCodeLine{00512\ \textcolor{comment}{\ \ \ \ \ reverse\ \ \ \ \ -\/\ if\ set\ true,\ sort\ in\ descending\ order;\ otherwise\ in\ ascending\ order}}
+\DoxyCodeLine{00513\ \textcolor{comment}{}}
+\DoxyCodeLine{00514\ \textcolor{comment}{-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/*/}}
+\DoxyCodeLine{00515\ \textcolor{keywordtype}{void}\ PolyPhaseMerge(}
+\DoxyCodeLine{00516\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ cnt\_pass,}
+\DoxyCodeLine{00517\ \ \ \ \ std::vector<std::string>\ \&ext\_arrays,}
+\DoxyCodeLine{00518\ \ \ \ \ \textcolor{keywordtype}{bool}\ reverse)}
+\DoxyCodeLine{00519\ \{}
+\DoxyCodeLine{00520\ \ \ \textcolor{comment}{/*-\/-\/-\/-\/-\/-\/\ CODE\ BEGINS\ -\/-\/-\/-\/-\/-\/*/}}
+\DoxyCodeLine{00521\ \ \ \textcolor{comment}{//\ open\ ext\_arrays\ for\ reading}}
+\DoxyCodeLine{00522\ }
+\DoxyCodeLine{00523\ \ \ \textcolor{keywordtype}{int}\ cur\_pass\ =\ 0;}
+\DoxyCodeLine{00524\ \ \ priority\_queue<pair<size\_t,\ size\_t>,\ vector<pair<size\_t,\ size\_t>>,\ greater<pair<size\_t,\ size\_t>>>\ minQueue;}
+\DoxyCodeLine{00525\ \ \ priority\_queue<pair<size\_t,\ size\_t>,\ vector<pair<size\_t,\ size\_t>>,\ less<pair<size\_t,\ size\_t>>>\ maxQueue;}
+\DoxyCodeLine{00526\ }
+\DoxyCodeLine{00527\ \ \ \textcolor{comment}{/*-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00528\ \textcolor{comment}{\ \ pseudocode,\ ()\ is\ plain\ English\ description.\ Comments\ are\ explanation.}}
+\DoxyCodeLine{00529\ \textcolor{comment}{\ \ 1.\ (initialize\ file\ streams\ here)}}
+\DoxyCodeLine{00530\ \textcolor{comment}{\ \ \ \ //\ if\ you\ reopen\ all\ file\ streams\ inside\ the\ while(cnt\_pass\ >\ 0)}}
+\DoxyCodeLine{00531\ \textcolor{comment}{\ \ \ \ //\ then\ you\ move\ the\ filestream\ back\ to\ the\ beginning\ of\ files}}
+\DoxyCodeLine{00532\ \textcolor{comment}{\ \ \ \ //\ which\ reads\ duplicated\ input\ from\ the\ tapes\ /\ files\ that\ have\ not\ consumed\ all\ blocks}}
+\DoxyCodeLine{00533\ \textcolor{comment}{\ \ 2.\ while(cnt\_pass\ >\ 0)}}
+\DoxyCodeLine{00534\ \textcolor{comment}{\ \ \{}}
+\DoxyCodeLine{00535\ \textcolor{comment}{\ \ \ \ 3.}}
+\DoxyCodeLine{00536\ \textcolor{comment}{\ \ \ \ while(NONE\ OF\ THE\ TAPES\ have\ not\ been\ fully\ consumed)}}
+\DoxyCodeLine{00537\ \textcolor{comment}{\ \ \ \ \{}}
+\DoxyCodeLine{00538\ \textcolor{comment}{\ \ \ \ \ \ 4.}}
+\DoxyCodeLine{00539\ \textcolor{comment}{\ \ \ \ \ \ (initialize\ the\ PriorityQueue\ to\ read\ the\ first\ entry\ of\ each\ block\ of\ all\ input\ tapes)}}
+\DoxyCodeLine{00540\ \textcolor{comment}{\ \ \ \ \ \ 5.}}
+\DoxyCodeLine{00541\ \textcolor{comment}{\ \ \ \ \ \ while(PriorityQueue\ is\ not\ empty)}}
+\DoxyCodeLine{00542\ \textcolor{comment}{\ \ \ \ \ \ \{}}
+\DoxyCodeLine{00543\ \textcolor{comment}{\ \ \ \ \ \ \ \ 5.a}}
+\DoxyCodeLine{00544\ \textcolor{comment}{\ \ \ \ \ \ \ \ pop\ from\ the\ queue}}
+\DoxyCodeLine{00545\ \textcolor{comment}{\ \ \ \ \ \ \ \ 5.b}}
+\DoxyCodeLine{00546\ \textcolor{comment}{\ \ \ \ \ \ \ \ write\ to\ the\ output\ tape}}
+\DoxyCodeLine{00547\ \textcolor{comment}{\ \ \ \ \ \ \ \ 5.c}}
+\DoxyCodeLine{00548\ \textcolor{comment}{\ \ \ \ \ \ \ \ if\ (not\ at\ end\ of\ a\ block\ for\ the\ popped\ value)}}
+\DoxyCodeLine{00549\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ 5.c.i}}
+\DoxyCodeLine{00550\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ push\ next\ value,\ from\ the\ tape\ which\ was\ just\ popped}}
+\DoxyCodeLine{00551\ \textcolor{comment}{\ \ \ \ \ \ \}}}
+\DoxyCodeLine{00552\ \textcolor{comment}{\ \ \ \ \ \ 3.a}}
+\DoxyCodeLine{00553\ \textcolor{comment}{\ \ \ \ \ \ (update\ whatever\ you\ designed\ for\ checking\ if\ NONE\ OF\ THE\ TAPES\ have\ not\ been\ fully\ consumed)}}
+\DoxyCodeLine{00554\ \textcolor{comment}{\ \ \ \ \}}}
+\DoxyCodeLine{00555\ \textcolor{comment}{\ \ 6.}}
+\DoxyCodeLine{00556\ \textcolor{comment}{\ \ \ \ 6.a}}
+\DoxyCodeLine{00557\ \textcolor{comment}{\ \ \ \ (close\ the\ output\ tape\ and\ make\ it\ input\ file\ stream)}}
+\DoxyCodeLine{00558\ \textcolor{comment}{\ \ \ \ 6.b}}
+\DoxyCodeLine{00559\ \textcolor{comment}{\ \ \ \ (close\ the\ empty\ input\ tape\ and\ make\ it\ output\ file\ stream)}}
+\DoxyCodeLine{00560\ \textcolor{comment}{\ \ \ \ 6.c}}
+\DoxyCodeLine{00561\ \textcolor{comment}{\ \ \ \ (update\ the\ cnt\_least\_input\ and\ cnt\_output)}}
+\DoxyCodeLine{00562\ \textcolor{comment}{\ \ \ \ 2.a}}
+\DoxyCodeLine{00563\ \textcolor{comment}{\ \ \ \ cnt\_pass-\/-\/;}}
+\DoxyCodeLine{00564\ \textcolor{comment}{\ \ \}\ //\ end\ of\ while(cnt\_pass\ >\ 0)}}
+\DoxyCodeLine{00565\ \textcolor{comment}{\ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/*/}}
+\DoxyCodeLine{00566\ }
+\DoxyCodeLine{00567\ \ \ \textcolor{keyword}{auto}\ passes\_remaining\ =\ cnt\_pass+1;}
+\DoxyCodeLine{00568\ \ \ \textcolor{keywordtype}{int}\ prev\_output\ =\ ext\_arrays.size()\ -\/\ 1;}
+\DoxyCodeLine{00569\ \ \ \textcolor{keywordtype}{int}\ cnt\_output\ =\ ext\_arrays.size()\ -\/\ 1;}
+\DoxyCodeLine{00570\ \ \ vector<fstream>\ fileStreams(ext\_arrays.size());}
+\DoxyCodeLine{00571\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ ext\_arrays.size();\ i++)}
+\DoxyCodeLine{00572\ \ \ \{}
+\DoxyCodeLine{00573\ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ !=\ cnt\_output)}
+\DoxyCodeLine{00574\ \ \ \ \ \{\ \textcolor{comment}{//\ don't\ open\ the\ output\ tape\ as\ input\ fstream}}
+\DoxyCodeLine{00575\ \ \ \ \ \ \ fileStreams[i].open(ext\_arrays[i].c\_str(),\ ios::in);}
+\DoxyCodeLine{00576\ \ \ \ \ \}}
+\DoxyCodeLine{00577\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00578\ \ \ \ \ \{}
+\DoxyCodeLine{00579\ \ \ \ \ \ \ fileStreams[i].open(ext\_arrays[i].c\_str(),\ ios::out);}
+\DoxyCodeLine{00580\ \ \ \ \ \}}
+\DoxyCodeLine{00581\ \ \ \}}
+\DoxyCodeLine{00582\ \ \ \textcolor{keywordflow}{while}\ (passes\_remaining\ >=\ 0)}
+\DoxyCodeLine{00583\ \ \ \{}
+\DoxyCodeLine{00584\ }
+\DoxyCodeLine{00585\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ fileStreams.size();\ i++)}
+\DoxyCodeLine{00586\ \ \ \ \ \{}
+\DoxyCodeLine{00587\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ !=\ cnt\_output)}
+\DoxyCodeLine{00588\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00589\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fileStreams[i].eof())}
+\DoxyCodeLine{00590\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00591\ \ \ \ \ \ \ \ \ \ \ fileStreams[i].close();}
+\DoxyCodeLine{00592\ \ \ \ \ \ \ \ \ \ \ fileStreams[i].clear();}
+\DoxyCodeLine{00593\ \ \ \ \ \ \ \ \ \ \ fileStreams[i].open(ext\_arrays[i].c\_str(),\ ios::out\ |\ ios::trunc);}
+\DoxyCodeLine{00594\ \ \ \ \ \ \ \ \ \ \ fileStreams[i].seekg(0,\ ios::beg);}
+\DoxyCodeLine{00595\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00596\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00597\ \ \ \ \ \}}
+\DoxyCodeLine{00598\ }
+\DoxyCodeLine{00599\ }
+\DoxyCodeLine{00600\ \ \ \ \ \textcolor{keywordtype}{bool}\ emptyTapePresent\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00601\ \ \ \ \ \textcolor{keywordflow}{while}\ (!emptyTapePresent)}
+\DoxyCodeLine{00602\ }
+\DoxyCodeLine{00603\ \ \ \ \ \{}
+\DoxyCodeLine{00604\ \ \ \ \ \ \ \textcolor{comment}{//\ initialize\ the\ queue\ (\ first\ entry\ of\ each\ tape,\ with\ index\ relating\ to\ which\ tape\ val\ is\ associated\ with)}}
+\DoxyCodeLine{00605\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ fileStreams.size();\ i++)}
+\DoxyCodeLine{00606\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00607\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ !=\ cnt\_output)}
+\DoxyCodeLine{00608\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00609\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{string}\ buf\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00610\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(!fileStreams[i].eof())\{}
+\DoxyCodeLine{00611\ \ \ \ \ \ \ \ \ \ \ \ \ getline(fileStreams[i],\ buf);}
+\DoxyCodeLine{00612\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00613\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\{}
+\DoxyCodeLine{00614\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00615\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00616\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (reverse)}
+\DoxyCodeLine{00617\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00618\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (buf\ !=\ \textcolor{stringliteral}{"{}"{}}\ \&\&\ buf\ !=\ \textcolor{stringliteral}{"{}\$"{}})}
+\DoxyCodeLine{00619\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ maxQueue.push(make\_pair(stoi(buf),\ i));}
+\DoxyCodeLine{00620\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00621\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00622\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00623\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (buf\ !=\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}}\ \&\&\ buf\ !=\ \textcolor{stringliteral}{"{}"{}}\ \&\&\ buf\ !=\ \textcolor{stringliteral}{"{}\$"{}})}
+\DoxyCodeLine{00624\ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00625\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ minQueue.push(make\_pair(\textcolor{keywordtype}{size\_t}(stoi(buf)),\ i));}
+\DoxyCodeLine{00626\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00627\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00628\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00629\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00630\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (reverse)\{}
+\DoxyCodeLine{00631\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (!maxQueue.empty())}
+\DoxyCodeLine{00632\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00633\ \ \ \ \ \ \ \ \ \ \ pair<size\_t,\ size\_t>\ val\ =\ maxQueue.top();}
+\DoxyCodeLine{00634\ \ \ \ \ \ \ \ \ \ \ maxQueue.pop();}
+\DoxyCodeLine{00635\ \ \ \ \ \ \ \ \ \ \ fileStreams[cnt\_output]\ <<\ val.first\ <<\ endl;}
+\DoxyCodeLine{00636\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{string}\ buf\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00637\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!fileStreams[val.second].eof())}
+\DoxyCodeLine{00638\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00639\ \ \ \ \ \ \ \ \ \ \ \ \ getline(fileStreams[val.second],\ buf);}
+\DoxyCodeLine{00640\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (buf\ !=\ \textcolor{stringliteral}{"{}"{}}\ \&\&\ buf\ !=\ \textcolor{stringliteral}{"{}\$"{}})}
+\DoxyCodeLine{00641\ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00642\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ maxQueue.push(make\_pair(\textcolor{keywordtype}{size\_t}(stoi(buf)),\ val.second));}
+\DoxyCodeLine{00643\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00644\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00645\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00646\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00647\ \ \ \ \ \ \ \textcolor{keywordflow}{else}\{}
+\DoxyCodeLine{00648\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (!minQueue.empty())}
+\DoxyCodeLine{00649\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00650\ \ \ \ \ \ \ \ \ \ \ pair<size\_t,\ size\_t>\ val\ =\ minQueue.top();}
+\DoxyCodeLine{00651\ \ \ \ \ \ \ \ \ \ \ minQueue.pop();}
+\DoxyCodeLine{00652\ \ \ \ \ \ \ \ \ \ \ fileStreams[cnt\_output]\ <<\ val.first\ <<\ endl;}
+\DoxyCodeLine{00653\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{string}\ buf\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00654\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!fileStreams[val.second].eof())}
+\DoxyCodeLine{00655\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00656\ \ \ \ \ \ \ \ \ \ \ \ \ getline(fileStreams[val.second],\ buf);}
+\DoxyCodeLine{00657\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (buf\ !=\ \textcolor{stringliteral}{"{}"{}}\ \&\&\ buf\ !=\ \textcolor{stringliteral}{"{}\$"{}})}
+\DoxyCodeLine{00658\ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00659\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ minQueue.push(make\_pair(\textcolor{keywordtype}{size\_t}(stoi(buf)),\ val.second));}
+\DoxyCodeLine{00660\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00661\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00662\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00663\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00664\ \ \ \ \ \ \ \textcolor{keywordflow}{if}(passes\_remaining\ <=\ 0)\{}
+\DoxyCodeLine{00665\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00666\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00667\ \ \ \ \ \ \ fileStreams[cnt\_output]\ <<\ \textcolor{stringliteral}{"{}\$"{}}\ <<\ endl;\ \textcolor{comment}{//\ delimit\ new\ block}}
+\DoxyCodeLine{00668\ \ \ \ \ \ \ emptyTapePresent\ =\ EmptyTapes(fileStreams,\ cnt\_output);\ \ \ \ }
+\DoxyCodeLine{00669\ \ \ \ \ }
+\DoxyCodeLine{00670\ \ \ \ \ \textcolor{comment}{//\ reached\ an\ empty\ tape\ -\/\ will\ be\ tape\ with\ index\ cnt\_least\_input}}
+\DoxyCodeLine{00671\ \ \ \ \ \}}
+\DoxyCodeLine{00672\ \ \ \ \ \textcolor{keywordflow}{if}\ (EmptyTapes(fileStreams,\ cnt\_output))}
+\DoxyCodeLine{00673\ \ \ \ \ \{}
+\DoxyCodeLine{00674\ \ \ \ \ \ \ \textcolor{comment}{//\ get\ empty\ tape\ index\ from\ fileStreams}}
+\DoxyCodeLine{00675\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ emptyTapeIndex\ =\ getEmptyTape(fileStreams,\ cnt\_output);\ \textcolor{comment}{//\ empty\ tape\ index\ may\ be\ reporting\ incorrectly\ -\/\ check\ this}}
+\DoxyCodeLine{00676\ \ \ \ \ \ \ \textcolor{comment}{//\ close\ the\ output\ tape}}
+\DoxyCodeLine{00677\ \ \ \ \ \ \ fileStreams[cnt\_output].close();}
+\DoxyCodeLine{00678\ \ \ \ \ \ \ \textcolor{comment}{//\ close\ the\ empty\ tape}}
+\DoxyCodeLine{00679\ \ \ \ \ \ \ fileStreams[emptyTapeIndex].close();}
+\DoxyCodeLine{00680\ \ \ \ \ \ \ \textcolor{comment}{//\ open\ ext\_arrays[emptyTapeIndex]\ as\ output\ fstream\ as\ it's\ empty\ now}}
+\DoxyCodeLine{00681\ \ \ \ \ \ \ fileStreams[emptyTapeIndex].open(ext\_arrays[emptyTapeIndex].c\_str(),\ ios::out);}
+\DoxyCodeLine{00682\ \ \ \ \ \ \ \textcolor{comment}{//cout\ <<\ "{}just\ closed:\ "{}\ <<\ emptyTapeIndex\ <<\ endl;}}
+\DoxyCodeLine{00683\ \ \ \ \ \ \ fileStreams[emptyTapeIndex].seekg(0,\ ios::beg);}
+\DoxyCodeLine{00684\ \ \ \ \ \ \ \textcolor{comment}{//\ open\ ext\_arrays[cnt\_output]\ as\ input\ fstream\ as\ it's\ the\ new\ output\ tape}}
+\DoxyCodeLine{00685\ \ \ \ \ \ \ fileStreams[cnt\_output].open(ext\_arrays[cnt\_output].c\_str(),\ ios::in);}
+\DoxyCodeLine{00686\ \ \ \ \ \ \ fileStreams[cnt\_output].seekg(0,\ ios::beg);}
+\DoxyCodeLine{00687\ \ \ \ \ \ \ prev\_output\ =\ cnt\_output;\ \textcolor{comment}{//\ sets\ prev\_output,\ only\ used\ for\ final\ pass\ to\ rename\ the\ final\ output\ tape\ to\ output.txt}}
+\DoxyCodeLine{00688\ \ \ \ \ \ \ cnt\_output\ =\ emptyTapeIndex;}
+\DoxyCodeLine{00689\ }
+\DoxyCodeLine{00690\ \ \ \ \ \}}
+\DoxyCodeLine{00691\ \ \ \ \ passes\_remaining-\/-\/;}
+\DoxyCodeLine{00692\ \ \ \}}
+\DoxyCodeLine{00693\ }
+\DoxyCodeLine{00694\ \ \ \textcolor{comment}{//\ close\ all\ file\ streams}}
+\DoxyCodeLine{00695\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ fileStreams.size();\ i++)}
+\DoxyCodeLine{00696\ \ \ \{}
+\DoxyCodeLine{00697\ \ \ \ \ \textcolor{keywordflow}{if}\ (\ i\ !=\ prev\_output)\{}
+\DoxyCodeLine{00698\ \ \ \ \ \ \ fileStreams[i].close();}
+\DoxyCodeLine{00699\ \ \ \ \ \ \ remove(ext\_arrays[i].c\_str());}
+\DoxyCodeLine{00700\ \ \ \ \ \}}
+\DoxyCodeLine{00701\ \ \ \ \ \textcolor{keywordflow}{else}\{}
+\DoxyCodeLine{00702\ \ \ \ \ \ \ fileStreams[i].close();}
+\DoxyCodeLine{00703\ \ \ \ \ \ \ rename(ext\_arrays[i].c\_str(),\ \textcolor{stringliteral}{"{}output.txt"{}});}
+\DoxyCodeLine{00704\ \ \ \ \ \}}
+\DoxyCodeLine{00705\ \ \ \}}
+\DoxyCodeLine{00706\ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00707\ \}}
+\DoxyCodeLine{00708\ \textcolor{comment}{/*-\/-\/-\/-\/-\/-\/\ CODE\ ENDS\ -\/-\/-\/-\/-\/-\/*/}}
+\DoxyCodeLine{00709\ }
+\DoxyCodeLine{00710\ \textcolor{comment}{/*-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00711\ \textcolor{comment}{\ The\ driver\ external\ sort\ function\ function}}
+\DoxyCodeLine{00712\ \textcolor{comment}{\ \ \ input\_file\ \ \ -\/\ the\ file\ name\ that\ contains\ the\ inputs}}
+\DoxyCodeLine{00713\ \textcolor{comment}{\ \ \ output\_file\ \ -\/\ the\ file\ name\ that\ contains\ the\ final\ sorted\ elements}}
+\DoxyCodeLine{00714\ \textcolor{comment}{\ \ \ reverse\ \ \ \ \ \ -\/\ if\ set\ true,\ sort\ in\ descending\ order;\ otherwise\ in\ ascending\ order}}
+\DoxyCodeLine{00715\ \textcolor{comment}{-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/*/}}
+\DoxyCodeLine{00716\ \textcolor{keywordtype}{void}\ ExternalSort(\textcolor{keyword}{const}\ std::string\ \&input\_file,\ \textcolor{keyword}{const}\ std::string\ \&output\_file,\ \textcolor{keywordtype}{bool}\ reverse\ =\ \textcolor{keyword}{false})}
+\DoxyCodeLine{00717\ \{}
+\DoxyCodeLine{00718\ }
+\DoxyCodeLine{00719\ \ \ \textcolor{comment}{/*-\/-\/-\/-\/-\/-\/\ CODE\ BEGINS\ -\/-\/-\/-\/-\/-\/*/}}
+\DoxyCodeLine{00720\ \ \ std::vector<std::string>\ files;}
+\DoxyCodeLine{00721\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 1;\ i\ <=\ TOTAL\_TAPES;\ i++)\{}
+\DoxyCodeLine{00722\ \ \ \ \ \ \ files.push\_back(\textcolor{stringliteral}{"{}test\_"{}}\ +\ std::to\_string(i)\ +\ \textcolor{stringliteral}{"{}.txt"{}});}
+\DoxyCodeLine{00723\ \ \ \}}
+\DoxyCodeLine{00724\ \ \ \textcolor{keywordtype}{int}\ cnt\_pass\ =\ LoadSortInputBlocks(input\_file,\ files,\ reverse);}
+\DoxyCodeLine{00725\ \ \ PolyPhaseMerge(cnt\_pass,\ files,\ reverse);}
+\DoxyCodeLine{00726\ \ \ rename(\textcolor{stringliteral}{"{}output.txt"{}},\ output\_file.c\_str());}
+\DoxyCodeLine{00727\ \ \ \textcolor{comment}{/*-\/-\/-\/-\/-\/-\/\ CODE\ ENDS\ -\/-\/-\/-\/-\/-\/*/}}
+\DoxyCodeLine{00728\ \}}
+\DoxyCodeLine{00729\ }
+\DoxyCodeLine{00730\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}
